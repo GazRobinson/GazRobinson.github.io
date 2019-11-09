@@ -1,4 +1,4 @@
-<script src="https://apis.google.com/js/api.js"></script>
+
 
   var CLIENT_ID = '1096029353320-r8eao6g2o1f80rmb5526b7vm3cobijcr.apps.googleusercontent.com';
       var API_KEY = 'AIzaSyBlQ3Hs68TiOa867E7t4qgJfgg5IIV4uKo
