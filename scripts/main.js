@@ -1,110 +1,114 @@
-/*
-document.addEventListener("keydown", keyDownHandler, false);
-document.addEventListener("keyup", keyUpHandler, false);
+<script src="https://apis.google.com/js/api.js"></script>
 
-var canvas = document.getElementById("glCanvas");
-var ctx = canvas.getContext("2d");
+  var CLIENT_ID = '1096029353320-r8eao6g2o1f80rmb5526b7vm3cobijcr.apps.googleusercontent.com';
+      var API_KEY = 'AIzaSyBlQ3Hs68TiOa867E7t4qgJfgg5IIV4uKo
+      // Array of API discovery doc URLs for APIs used by the quickstart
+      var DISCOVERY_DOCS = ["https://sheets.googleapis.com/$discovery/rest?version=v4"];
 
-let myHeading = document.querySelector('h1');
-myHeading.textContent = 'Hello world!';
+      // Authorization scopes required by the API; multiple scopes can be
+      // included, separated by spaces.
+      var SCOPES = "https://www.googleapis.com/auth/spreadsheets.readonly";
 
+      var authorizeButton = document.getElementById('authorize_button');
+      var signoutButton = document.getElementById('signout_button');
 
-let myImage = document.querySelector('img');
+      /**
+       *  On load, called to load the auth2 library and API client library.
+       */
+      function handleClientLoad() {
+        gapi.load('client:auth2', initClient);
+      }
 
-myImage.onmousedown = function() {
-    let mySrc = myImage.getAttribute('src');
-    if(mySrc === 'images/Nivix.png') {
-      myImage.setAttribute ('src','images/rock2.jpg');
-    } else {
-      myImage.setAttribute ('src','images/Nivix.png');
-    }
-}
+      /**
+       *  Initializes the API client library and sets up sign-in state
+       *  listeners.
+       */
+      function initClient() {
+        gapi.client.init({
+          apiKey: API_KEY,
+          clientId: CLIENT_ID,
+          discoveryDocs: DISCOVERY_DOCS,
+          scope: SCOPES
+        }).then(function () {
+          // Listen for sign-in state changes.
+          gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
 
-let myButton = document.querySelector('button');
+          // Handle the initial sign-in state.
+          updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+          authorizeButton.onclick = handleAuthClick;
+          signoutButton.onclick = handleSignoutClick;
+        }, function(error) {
+          appendPre(JSON.stringify(error, null, 2));
+        });
+      }
 
-function setUserName() {
-    let myName = prompt('Please enter your name.');
-    localStorage.setItem('name', myName);
-    myHeading.textContent = 'Mozilla is cool, ' + myName;
-  }
-
-  if(!localStorage.getItem('name')) {
-    setUserName();
-  } else {
-    let storedName = localStorage.getItem('name');
-    myHeading.textContent = 'Mozilla is cool, ' + storedName;
-  }
-
-  myButton.onclick = function() {
-    setUserName();
-  }
-
-let rightPressed = false;
-let leftPressed = false;
-function keyDownHandler(e) {
-    if(e.key == "Right" || e.key == "ArrowRight") {
-        rightPressed = true;
-    }
-    else if(e.key == "Left" || e.key == "ArrowLeft") {
-        leftPressed = true;
-    }
-}
-
-function keyUpHandler(e) {
-    if(e.key == "Right" || e.key == "ArrowRight") {
-        rightPressed = false;
-    }
-    else if(e.key == "Left" || e.key == "ArrowLeft") {
-        leftPressed = false;
-    }
-}
-var paddleHeight = 10;
-var paddleWidth = 75;
-var paddleX = (canvas.width-paddleWidth) / 2;
-function drawPaddle(){
-    ctx.beginPath();
-    ctx.rect(paddleX, canvas.height-paddleHeight, paddleWidth, paddleHeight);
-    ctx.fillStyle = "#0095DD";
-    ctx.fill();
-    ctx.closePath();
-}
-function draw(timestamp) {
-    let dt = (timestamp - t)/1000;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    if(rightPressed) {
-        paddleX += 120*dt;
-        if (paddleX + paddleWidth > canvas.width){
-            paddleX = canvas.width - paddleWidth;
+      /**
+       *  Called when the signed in status changes, to update the UI
+       *  appropriately. After a sign-in, the API is called.
+       */
+      function updateSigninStatus(isSignedIn) {
+        if (isSignedIn) {
+          authorizeButton.style.display = 'none';
+          signoutButton.style.display = 'block';
+          listMajors();
+        } else {
+          authorizeButton.style.display = 'block';
+          signoutButton.style.display = 'none';
         }
-    }
-    else if(leftPressed) {
-        paddleX -= 120*dt;
-        if (paddleX < 0){
-            paddleX = 0;
-        }
-    }
+      }
 
-    ctx.beginPath();
-    ctx.arc(50, 50, 10, 0, Math.PI*2);
-    ctx.fillStyle = "#0095DD";
-    ctx.fill();
-    ctx.closePath();
-    drawPaddle();
-    drawScore(dt);
-    t = timestamp;
-    requestAnimationFrame(draw);
-}
-let t = 0.0;
-function drawScore(timestamp) {
-    ctx.font = "16px Arial";
-    ctx.fillStyle = "#0095DD";
-    ctx.fillText("Score: " + timestamp, 8, 20);
-}*/
-//setInterval(draw, 16.667);
-  //  requestAnimationFrame(draw);
+      /**
+       *  Sign in the user upon button click.
+       */
+      function handleAuthClick(event) {
+        gapi.auth2.getAuthInstance().signIn();
+      }
 
-    function main() {
+      /**
+       *  Sign out the user upon button click.
+       */
+      function handleSignoutClick(event) {
+        gapi.auth2.getAuthInstance().signOut();
+      }
+
+      /**
+       * Append a pre element to the body containing the given message
+       * as its text node. Used to display the results of the API call.
+       *
+       * @param {string} message Text to be placed in pre element.
+       */
+      function appendPre(message) {
+        var pre = document.getElementById('content');
+        var textContent = document.createTextNode(message + '\n');
+        pre.appendChild(textContent);
+      }
+
+      /**
+       * Print the names and majors of students in a sample spreadsheet:
+       * https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
+       */
+      function listMajors() {
+        gapi.client.sheets.spreadsheets.values.get({
+          spreadsheetId: '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms',
+          range: 'Class Data!A2:E',
+        }).then(function(response) {
+          var range = response.result;
+          if (range.values.length > 0) {
+            appendPre('Name, Major:');
+            for (i = 0; i < range.values.length; i++) {
+              var row = range.values[i];
+              // Print columns A and E, which correspond to indices 0 and 4.
+              appendPre(row[0] + ', ' + row[4]);
+            }
+          } else {
+            appendPre('No data found.');
+          }
+        }, function(response) {
+          appendPre('Error: ' + response.result.error.message);
+        });
+      }
+
+    /*function main() {
         const canvas = document.getElementById("glCanvas");
         // Initialize the GL context
         const gl = canvas.getContext("webgl2");
@@ -119,6 +123,6 @@ function drawScore(timestamp) {
         gl.clearColor(0.0, 0.0, 0.0, 1.0);
         // Clear the color buffer with specified clear color
         gl.clear(gl.COLOR_BUFFER_BIT);
-      }
+      }*/
       
-      window.onload = main;
+      //window.onload = main;
